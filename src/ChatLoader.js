@@ -9,39 +9,42 @@ const ChatLoader = (props) => {
     };
 
     useEffect(() => {
-        if (props.ext === "json") {
+        if (props.ext === "json" && props.dump !== "") {
             //setDump();
-            console.log(props.dump);
+            //console.log(props.dump);
+            try {
+                const dump = JSON.parse(props.dump.toString());
+                setDump(dump);
+            } catch {
+                throw new Error("JSON parse error");
+            }
         }
     }, [props.ext, props.dump])
     return (
         <>
         
             
-        {dump.name && 
+        {dump.title && 
             <div class="font-weight-bold text-center mb-3">
-                {dump.name} : {dump.type}
+                {dump.title} : {dump.saved_time}
             </div>
         }
         {dump.messages && dump.messages.map((chat, index) => {
-            const type_ = chat.type;
-            if (type_ !== "message") {
+            const time = chat.time;
+            const name = chat.name;
+            const message = chat.message;
+            if (message === "") {
                 return (<></>)
-            }
-            const date_ = chat.date;
-            const from_ = chat.from;
-            const text_ = chat.text;
-            if (text_ === "") {
-                return (<></>)
-            } else if (typeof text_ === "string") {
+            } else if (typeof message === "string") {
                 return (
-                    <ul key={index} className="list-group py-1 list-group-horizontal">
-                        <li className="list-group-item py-1">{date_}</li>
-                        <li className="list-group-item py-1">{from_}</li>
-                        <li className="list-group-item py-1 list-group-item-info" text={text_} />
+                    <ul className="list-group py-1 list-group-horizontal">
+                        <li className="list-group-item py-1">{time}</li>
+                        <li className="list-group-item py-1">{name}</li>
+                        <TaggedLi className="list-group-item" chat={chat}></TaggedLi>
                     </ul>
                 ) // li 대신 TaggedLi
                 // <TaggedLi text={text_}></TaggedLi>
+                // <li className="list-group-item py-1">{message}</li>
             } else {
                 // 리스트도 필요하게 되면 추후 처리
                 // else if (typeof Array.isArray(text_)) {...}

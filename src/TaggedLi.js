@@ -30,31 +30,25 @@ const TaggedLi = (props) => {
     }, [ners])
 
     useEffect(() => {
-        setText(props.text);
+        setText([...props.chat.message]);   // String을 [...string]으로 배열로 만들면 길이2인 이모티콘까지 1개 인덱스로 고려할 수 있다! (엄청난 사실)
+                                            // https://stackoverflow.com/questions/24531751/how-can-i-split-a-string-containing-emoji-into-an-array
     }, [props.text]);
     useEffect(() => {
         if (text === "" || ners.length !== 0) {
             return;
         }
-        const req = {
-            sent: text,
-        };
+        if (props.chat.ner_tags.length === 0 && props.chat.kw_tags.length === 0) {
+            return;
+        }
 
-        axios
-            .post(process.env.REACT_APP_BE_URL+"/api/both", req, {timeout: 100000})
-            .then((res) => {
-                if (res.data.length !== 0) {
-                    setNers(res.data);
-                    // for (var ner of res.data) {
-                    //     const new_text = text.slice(0, ner.start) + "<" + text.slice(ner.start, ner.end) + ":"+ner.entity_group+">" + text.slice(ner.end)
-                    //     setText(new_text)
-                    //     console.log(new_text)
-                    // }
-                }
-            })
-            .catch((e) => {
-                console.log("error with", text, "msg: ", e);
-            });
+        console.log(props.chat);
+            
+        const concat = props.chat.ner_tags.concat(props.chat.kw_tags);
+        concat.sort((a, b) => {return a.start - b.start});
+        console.log(concat);
+
+        setNers(concat);
+        
     }, [text]);
     return (
         <li className={
@@ -81,33 +75,33 @@ const TaggedLi = (props) => {
                     return (
                         <> 
                         {text.slice(0, ner.start)} 
-                        <span className={color} data-bs-toggle="popover" data-bs-title={ner.entity_group} data-bs-content={ner.word}>
+                        <span className={color} data-bs-toggle="popover" data-bs-title={popup_title[ner.entity_group]} data-bs-content={ner.word}>
                             {text.slice(ner.start, ner.end)} 
                         </span> 
-                        {text.slice(ner.end, ners[idx+1].start-1)}
                         </>
                     )
-                } else if (idx !== ners.length-1) { // 중간
+                } 
+                else if (idx !== ners.length-1) { // 중간
                     return (
                         <> 
-                        {text.slice(ners[idx-1].end+1, ner.start)} 
-                        <span className={color} data-bs-toggle="popover" data-bs-title={ner.entity_group} data-bs-content={ner.word}>
+                        {text.slice(ners[idx-1].end, ner.start)} 
+                        <span className={color} data-bs-toggle="popover" data-bs-title={popup_title[ner.entity_group]} data-bs-content={ner.word}>
                             {text.slice(ner.start, ner.end)} 
                         </span> 
-                        {text.slice(ner.end, ners[idx+1].start-1)}
                         </>
                     )
                 } else { // 끝
                     return (
                         <> 
-                        {text.slice(ners[idx-1].end+1, ner.start)} 
-                        <span className={color} data-bs-toggle="popover" data-bs-title={ner.entity_group} data-bs-content={ner.word}>
+                        {text.slice(ners[idx-1].end, ner.start)} 
+                        <span className={color} data-bs-toggle="popover" data-bs-title={popup_title[ner.entity_group]} data-bs-content={ner.word}>
                             {text.slice(ner.start, ner.end)} 
                         </span> 
                         {text.slice(ner.end)}
                         </>
                     )
-            }})
+                }
+            })
             : text
         }</li>
     );

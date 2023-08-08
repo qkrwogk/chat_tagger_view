@@ -1,4 +1,6 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# 샘플 파일
+/files
 
 # dependencies
 /node_modules
